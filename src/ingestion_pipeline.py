@@ -1,10 +1,12 @@
+import os
 import logging
-from pathlib import Path
-from tempfile import TemporaryDirectory
 import zipfile
-
 import pandas as pd
 import requests
+
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from sqlalchemy import create_engine
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -163,15 +165,24 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 
     return df[FINAL_COLUMN_ORDER]
 
-
 def main() -> None:
     df = download_and_extract(DATASET_URL, CSV_FILENAME)
     df = clean(df)
 
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    df.to_csv(OUTPUT_PATH, index=False)
-    logger.info("Wrote %d rows to %s", len(df), OUTPUT_PATH)
+    # Database credentials from the Docker environment
+    user = os.getenv("DB_USER", "admin")
+    password = os.getenv("DB_PASSWORD", "adminpassword")
+    host = os.getenv("DB_HOST", "postgres")
+    port = os.getenv("DB_PORT", "5432")
+    db_name = os.getenv("DB_NAME", "gpu_database")
 
+    # Create the connection and push to PostgreSQL
+    engine = create_engine(f"postgresql://{user}:{password}@{host}:{port}/{db_name}")
+    
+    logger.info("Pushing data to PostgreSQL database...")
+    df.to_sql(name="gpu_clusters_cleaned", con=engine, if_exists="replace", index=False)
+    
+    logger.info("Successfully wrote %d rows to the database.", len(df))
 
 if __name__ == "__main__":
     main()
