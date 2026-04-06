@@ -9,11 +9,11 @@ WORKDIR /app
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy dependency files
-COPY "pyproject.toml" "uv.lock" ".python-version" ./
+COPY "pyproject.toml" "uv.lock" ./
 
 # Install dependencies
 RUN uv sync --locked
 
-COPY ingestion_pipeline.py.py pipeline.py
+COPY src/ingestion_pipeline.py pipeline.py
 
-ENTRYPOINT ["python", "pipeline.py"]
+ENTRYPOINT ["python", "/app/pipeline.py"]

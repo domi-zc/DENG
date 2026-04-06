@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: adminpassword
+      POSTGRES_DB: gpu_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - data_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - data_network
+
+  ingestion:
+    build: .
+    image: gpu_pipeline:latest
+    environment:
+      DB_USER: admin
+      DB_PASSWORD: adminpassword
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: gpu_database
+    depends_on:
+      - postgres
+    networks:
+      - data_network
+    
+  kestra:
+    image: kestra/kestra:latest
+    command: server local
+    user: root
+    ports:
+      - "8081:8080"
+    environment:
+      KESTRA_CONFIGURATION: |
+        kestra:
+          server:
+            basic-auth:
+              enabled: false
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - data_network
+
+volumes:
+  pg_data:
+  pgadmin_data:
+
+networks:
+  data_network:
+    name: gpu_data_network
+    driver: bridge
