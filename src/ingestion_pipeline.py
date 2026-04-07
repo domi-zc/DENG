@@ -3,12 +3,17 @@ import logging
 import zipfile
 import pandas as pd
 import requests
+import sys
 
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from sqlalchemy import create_engine
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+    stream=sys.stdout
+)
 logger = logging.getLogger(__name__)
 
 DATASET_URL = "https://epoch.ai/data/gpu_clusters.zip"
