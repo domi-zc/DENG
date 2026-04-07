@@ -38,19 +38,12 @@ We use Kestra to orchestrate the batch ingestion script. The setup is fully auto
 
 1. Open your browser and navigate to pgAdmin: http://localhost:8080
 2. Log in with the following credentials:
-   - **Email:** `admin@admin.com`
-   - **Password:** `adminpassword`
-3. In the top left, right-click **Servers** > **Register** > **Server...**
-4. Name it `Local Pipeline`.
-5. Switch to the **Connection** tab and enter:
-   - **Host name/address:** `postgres`
-   - **Port:** `5432`
-   - **Maintenance database:** `gpu_database`
-   - **Username:** `admin`
-   - **Password:** `adminpassword`
-6. Click **Save**.
-7. In the left menu, expand: **Servers** > **Local Pipeline** > **Databases** > **gpu_database** > **Schemas** > **public** > **Tables**.
-8. Right-click the `gpu_clusters_cleaned` table, select **View/Edit Data** > **All Rows** to verify the ingested data.
+    * **Email:** admin@admin.com
+    * **Password:** adminpassword
+3. In the left menu, expand **Servers** > **Local Pipeline**.
+4. When prompted, enter the database password: `adminpassword`
+5. Navigate to **Databases** > **gpu_database** > **Schemas** > **public** > **Tables**.
+6. Right-click the `gpu_clusters_cleaned` table, select **View/Edit Data** > **All Rows** to verify the ingested data.
 
 ## Step 4: Shut Down
 

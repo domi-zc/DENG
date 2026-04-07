@@ -21,6 +21,7 @@ services:
       - "8080:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+      - ./config/servers.json:/pgadmin4/servers.json
     depends_on:
       - postgres
     networks:

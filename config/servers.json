@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Local Pipeline",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "gpu_database",
+      "Username": "admin",
+      "SSLMode": "prefer"
+    }
+  }
+}
