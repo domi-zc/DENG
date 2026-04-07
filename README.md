@@ -12,6 +12,22 @@ This pipeline is fully containerized. To run it, you only need:
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Running in the background)
 
+## Pipeline Configuration & Rubric Highlights
+
+To assist with the peer review evaluation, here is an overview of the key pipeline components:
+
+### Environment Variables Explained
+The pipeline relies on environment variables defined in the `docker-compose.yaml` to securely pass credentials between the Python ingestion container and the PostgreSQL database container without hardcoding them into the Python script:
+* `POSTGRES_USER` & `POSTGRES_PASSWORD`: Sets the root credentials for the PostgreSQL database instance.
+* `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`, `DB_NAME`: Injected into the Python `ingestion` container so SQLAlchemy knows exactly how to route the cleaned dataframe to the database. 
+* `PGADMIN_DEFAULT_EMAIL` & `PGADMIN_DEFAULT_PASSWORD`: Sets the initial login credentials for the pgAdmin web interface.
+
+### Workflow Visibility
+The workflow orchestration code is visible and version-controlled in this repository under `orchestration/kestra_flow.yaml`. During the Docker Compose build, a setup container automatically imports this flow into the Kestra UI for immediate visibility.
+
+### Backfill Logic Explained
+This pipeline supports historical backfills. In the Kestra workflow (`kestra_flow.yaml`), the schedule trigger includes a `backfill` property starting from `2026-03-01T00:00:00Z`. If the pipeline experiences downtime or a scheduled run is missed, Kestra's backfill logic allows the user to manually trigger the pipeline for those specific historical dates to ensure no gaps exist in the dataset.
+
 ## Step 1: Build and Run the Infrastructure
 
 This project is fully containerized. To spin up the database, pgAdmin, and Kestra, open your terminal in the root of this repository and run:
