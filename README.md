@@ -24,14 +24,15 @@ _Wait about 30 seconds for the database and Kestra server to fully initialize._
 
 ## Step 2: Run the Orchestration (Kestra)
 
-We use Kestra to orchestrate the batch ingestion script.
+We use Kestra to orchestrate the batch ingestion script. The setup is fully automated.
 
 1. Open your browser and navigate to the Kestra UI: http://localhost:8081
-2. _Note: If prompted to create an admin user, enter any dummy email and password._
-3. On the left menu, click **Flows**.
-4. Click **Create** and paste the contents of the `orchestration/kestra_flow.yaml` file located in this repository.
-5. Click **Save**, then click the **Execute** button at the top right.
-6. The flow will trigger the Docker container, run the Python ingestion script, and push the cleaned data to PostgreSQL. Wait for the green **SUCCESS** status.
+2. Log in using the default pre-configured credentials:
+    * **Email:** admin@admin.com
+    * **Password:** adminpassword
+3. On the left menu, click **Flows**. You will see the `orchestrate_gpu_pipeline` flow has been automatically imported.
+4. Click on the flow, then click the **Execute** button at the top right.
+5. Wait for the green **SUCCESS** status. The pipeline has now ingested and pushed the data to PostgreSQL.
 
 ## Step 3: Verify the Data in PostgreSQL (pgAdmin)
 

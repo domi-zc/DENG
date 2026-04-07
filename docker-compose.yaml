@@ -51,11 +51,34 @@ services:
         kestra:
           server:
             basic-auth:
-              enabled: false
+              enabled: true
+              username: admin@admin.com
+              password: Adminpassword1
+          tutorial-flows:
+            enabled: false
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - data_network
+
+  kestra-setup:
+    image: curlimages/curl:latest
+    depends_on:
+      - kestra
+    volumes:
+      - ./orchestration/kestra_flow.yaml:/kestra_flow.yaml
+    networks:
+      - data_network
+    command: >
+      sh -c "
+      echo 'Waiting for Kestra to start...';
+      while ! curl -s http://kestra:8080/api/v1/ping > /dev/null; do
+        sleep 5;
+      done;
+      echo 'Kestra is up! Importing workflow...';
+      curl -u admin@admin.com:Adminpassword1 -X POST http://kestra:8080/api/v1/flows -H 'Content-Type: application/x-yaml' --data-binary @/kestra_flow.yaml;
+      echo 'Workflow imported successfully!';
+      "
 
 volumes:
   pg_data:
