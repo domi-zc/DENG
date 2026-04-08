@@ -45,7 +45,7 @@ We use Kestra to orchestrate the batch ingestion script. The setup is fully auto
 1. Open your browser and navigate to the Kestra UI: http://localhost:8081
 2. Log in using the default pre-configured credentials:
     * **Email:** admin@admin.com
-    * **Password:** adminpassword
+    * **Password:** Adminpassword1
 3. On the left menu, click **Flows**. You will see the `orchestrate_gpu_pipeline` flow has been automatically imported.
 4. Click on the flow, then click the **Execute** button at the top right.
 5. Wait for the green **SUCCESS** status. The pipeline has now ingested and pushed the data to PostgreSQL.
