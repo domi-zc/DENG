@@ -1,0 +1,15 @@
+FROM python:3.13.11-slim
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
+
+WORKDIR /app
+
+ENV PATH="/app/.venv/bin:$PATH" \
+    PYTHONPATH="/app"
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --locked --no-dev --extra cloud
+
+COPY src/__init__.py src/fetch_data.py src/fetch_from_gcs.py src/transform_data.py src/write_to_data_lake.py src/write_to_big_query.py src/
+COPY pipelines/__init__.py pipelines/data_lake_ingestion.py pipelines/data_warehouse_transformation.py pipelines/

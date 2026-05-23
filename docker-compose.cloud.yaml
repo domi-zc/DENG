@@ -1,0 +1,29 @@
+services:
+  lake-ingestion:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    command: ["python", "-m", "pipelines.data_lake_ingestion"]
+    env_file:
+      - .env
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /tmp/adc.json
+      GOOGLE_CLOUD_PROJECT: ${GCP_PROJECT_ID}
+    volumes:
+      - ${HOME}/.config/gcloud/application_default_credentials.json:/tmp/adc.json:ro
+
+  warehouse-transform:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    command: ["python", "-m", "pipelines.data_warehouse_transformation"]
+    depends_on:
+      lake-ingestion:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /tmp/adc.json
+      GOOGLE_CLOUD_PROJECT: ${GCP_PROJECT_ID}
+    volumes:
+      - ${HOME}/.config/gcloud/application_default_credentials.json:/tmp/adc.json:ro
