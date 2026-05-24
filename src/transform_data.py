@@ -152,6 +152,9 @@ class Transformer:
         for col in self.OPS_COLUMNS:
             if col in final_df.columns:
                 final_df[col] = pd.to_numeric(final_df[col], errors="coerce").astype("float64")
+        final_df["first_operational_date"] = pd.to_datetime(
+            final_df["first_operational_date"], errors="coerce"
+        ).dt.date
         if final_df.empty:
             raise ValueError("Cleaned DataFrame is empty after filtering")
 
