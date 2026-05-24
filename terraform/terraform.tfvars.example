@@ -1,3 +1,3 @@
-project_id  = "<your-project-id>"
-bucket_name = "<your-bucket-name>"
+gcp_project_id  = "<your-project-id>"
+gcp_bucket_name = "<your-bucket-name>"
 bq_dataset_name = "<your-bq-dataset-name>"
