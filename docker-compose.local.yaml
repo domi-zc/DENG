@@ -2,83 +2,84 @@ services:
   postgres:
     image: postgres:15
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: adminpassword
-      POSTGRES_DB: gpu_database
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
     networks:
-      - data_network
+      - gpu_data_network
 
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: adminpassword
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "8080:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-      - ./config/servers.json:/pgadmin4/servers.json
+      - ./local_config/servers.json:/pgadmin4/servers.json
     depends_on:
       - postgres
     networks:
-      - data_network
+      - gpu_data_network
 
-  ingestion:
-    build: .
+  local-image-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
     image: gpu_pipeline:latest
-    environment:
-      DB_USER: admin
-      DB_PASSWORD: adminpassword
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: gpu_database
-    depends_on:
-      - postgres
-    networks:
-      - data_network
-    
+    command: ["echo", "Local image built successfully!"]
+
   kestra:
     image: kestra/kestra:latest
     command: server local
     user: root
     ports:
       - "8081:8080"
+    env_file:
+      - .env
     environment:
+      ENV_DB_USER: ${DB_USER}
+      ENV_DB_PASSWORD: ${DB_PASSWORD}
+      ENV_DB_HOST: ${DB_HOST}
+      ENV_DB_PORT: ${DB_PORT}
+      ENV_DB_NAME: ${DB_NAME}
+      ENV_LOCAL_DB_TABLE: ${LOCAL_DB_TABLE}
       KESTRA_CONFIGURATION: |
         kestra:
           server:
             basic-auth:
               enabled: true
-              username: admin@admin.com
-              password: Adminpassword1
+              username: ${KESTRA_USER}
+              password: ${KESTRA_PASSWORD}
           tutorial-flows:
             enabled: false
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - data_network
+      - gpu_data_network
 
   kestra-setup:
     image: curlimages/curl:latest
     depends_on:
       - kestra
     volumes:
-      - ./orchestration/kestra_flow.yaml:/kestra_flow.yaml
+      - ./kestra:/flows:ro
     networks:
-      - data_network
+      - gpu_data_network
     command: >
       sh -c "
       echo 'Waiting for Kestra to start...';
       while ! curl -s http://kestra:8080/api/v1/ping > /dev/null; do
         sleep 5;
       done;
-      echo 'Kestra is up! Importing workflow...';
-      curl -u admin@admin.com:Adminpassword1 -X POST http://kestra:8080/api/v1/flows -H 'Content-Type: application/x-yaml' --data-binary @/kestra_flow.yaml;
-      echo 'Workflow imported successfully!';
+      echo 'Importing local workflow...';
+      curl -u ${KESTRA_USER}:${KESTRA_PASSWORD} -X POST http://kestra:8080/api/v1/flows -H 'Content-Type: application/x-yaml' --data-binary @/flows/local_flow.yaml;
+      echo 'Local workflow imported successfully!';
       "
 
 volumes:
@@ -86,6 +87,6 @@ volumes:
   pgadmin_data:
 
 networks:
-  data_network:
+  gpu_data_network:
     name: gpu_data_network
     driver: bridge

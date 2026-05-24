@@ -1,29 +1,59 @@
 services:
-  lake-ingestion:
+  cloud-image-builder:
     build:
       context: .
       dockerfile: Dockerfile.cloud
-    command: ["python", "-m", "pipelines.data_lake_ingestion"]
-    env_file:
-      - .env
-    environment:
-      GOOGLE_APPLICATION_CREDENTIALS: /tmp/adc.json
-      GOOGLE_CLOUD_PROJECT: ${GCP_PROJECT_ID}
-    volumes:
-      - ${HOME}/.config/gcloud/application_default_credentials.json:/tmp/adc.json:ro
+    image: cloud_pipeline_image:latest
+    command: ["echo", "Cloud image built successfully!"]
 
-  warehouse-transform:
-    build:
-      context: .
-      dockerfile: Dockerfile.cloud
-    command: ["python", "-m", "pipelines.data_warehouse_transformation"]
-    depends_on:
-      lake-ingestion:
-        condition: service_completed_successfully
+  kestra:
+    image: kestra/kestra:latest
+    command: server local
+    user: root
+    ports:
+      - "8081:8080"
     env_file:
       - .env
     environment:
-      GOOGLE_APPLICATION_CREDENTIALS: /tmp/adc.json
-      GOOGLE_CLOUD_PROJECT: ${GCP_PROJECT_ID}
+      ENV_HOST_PROJECT_PATH: ${PWD}
+      ENV_GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      ENV_GCS_BUCKET: ${GCS_BUCKET}
+      ENV_BQ_DATASET: ${BQ_DATASET}
+      ENV_BQ_TABLE: ${BQ_TABLE}
+      KESTRA_CONFIGURATION: |
+        kestra:
+          server:
+            basic-auth:
+              enabled: true
+              username: ${KESTRA_USER}
+              password: ${KESTRA_PASSWORD}
+          tutorial-flows:
+            enabled: false
     volumes:
-      - ${HOME}/.config/gcloud/application_default_credentials.json:/tmp/adc.json:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gpu_cloud_network
+
+  kestra-setup:
+    image: curlimages/curl:latest
+    depends_on:
+      - kestra
+    volumes:
+      - ./kestra:/flows:ro
+    networks:
+      - gpu_cloud_network
+    command: >
+      sh -c "
+      echo 'Waiting for Kestra to start...';
+      while ! curl -s http://kestra:8080/api/v1/ping > /dev/null; do
+        sleep 5;
+      done;
+      echo 'Importing cloud workflow...';
+      curl -u ${KESTRA_USER}:${KESTRA_PASSWORD} -X POST http://kestra:8080/api/v1/flows -H 'Content-Type: application/x-yaml' --data-binary @/flows/cloud_flow.yaml;
+      echo 'Cloud workflow imported successfully!';
+      "
+
+networks:
+  gpu_cloud_network:
+    name: gpu_cloud_network
+    driver: bridge
