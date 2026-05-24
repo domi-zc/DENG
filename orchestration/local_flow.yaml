@@ -1,0 +1,28 @@
+id: orchestrate_local_pipeline
+namespace: deng_final
+description: "Daily batch pipeline to ingest GPU data to local database"
+
+tasks:
+  - id: run_ingestion_container
+    type: io.kestra.plugin.docker.Run
+    containerImage: gpu_pipeline:latest
+    pullPolicy: NEVER
+    networkMode: gpu_data_network
+    commands:
+      - python
+      - "-m"
+      - pipelines.local_pipeline
+    env:
+      DB_USER: "{{ envs.db_user }}"
+      DB_PASSWORD: "{{ envs.db_password }}"
+      DB_HOST: "{{ envs.db_host }}"
+      DB_PORT: "{{ envs.db_port }}"
+      DB_NAME: "{{ envs.db_name }}"
+      LOCAL_DB_TABLE: "{{ envs.local_db_table }}"
+
+triggers:
+  - id: daily_batch_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 2 * * *"
+    backfill:
+      start: 2026-03-01T00:00:00Z
