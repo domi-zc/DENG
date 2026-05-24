@@ -1,0 +1,41 @@
+id: orchestrate_cloud_pipeline
+namespace: deng_final
+description: "Daily batch pipeline to ingest GPU data to GCS and transform in BigQuery"
+
+tasks:
+  - id: run_lake_ingestion
+    type: io.kestra.plugin.docker.Run
+    containerImage: cloud_pipeline_image:latest
+    pullPolicy: NEVER
+    networkMode: gpu_cloud_network
+    commands:
+      - python
+      - "-m"
+      - pipelines.data_lake_ingestion
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/.secrets/gcp-key-pipeline.json
+      GCP_PROJECT_ID: "{{ envs.gcp_project_id }}"
+      GCS_BUCKET: "{{ envs.gcs_bucket }}"
+
+  - id: run_warehouse_transformation
+    type: io.kestra.plugin.docker.Run
+    containerImage: cloud_pipeline_image:latest
+    pullPolicy: NEVER
+    networkMode: gpu_cloud_network
+    commands:
+      - python
+      - "-m"
+      - pipelines.data_warehouse_transformation
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: /app/.secrets/gcp-key-pipeline.json
+      GCP_PROJECT_ID: "{{ envs.gcp_project_id }}"
+      GCS_BUCKET: "{{ envs.gcs_bucket }}"
+      BQ_DATASET: "{{ envs.bq_dataset }}"
+      BQ_TABLE: "{{ envs.bq_table }}"
+
+triggers:
+  - id: daily_batch_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 2 * * *"
+    backfill:
+      start: 2026-03-01T00:00:00Z
