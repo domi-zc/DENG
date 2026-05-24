@@ -1,0 +1,19 @@
+# Git
+.git
+.gitignore
+
+# Python garbage
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+
+# Secrets and local configs
+.env
+terraform/
