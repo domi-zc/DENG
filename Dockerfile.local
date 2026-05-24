@@ -11,7 +11,5 @@ COPY pyproject.toml uv.lock ./
 
 RUN uv sync --locked --no-dev --extra local
 
-COPY src/__init__.py src/fetch_data.py src/transform_data.py src/write_to_postgresql.py src/
-COPY pipelines/__init__.py pipelines/local_pipeline.py pipelines/
-
-ENTRYPOINT ["python", "-m", "pipelines.local_pipeline"]
+COPY src/ src/
+COPY pipelines/ pipelines/

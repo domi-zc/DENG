@@ -11,5 +11,6 @@ COPY pyproject.toml uv.lock ./
 
 RUN uv sync --locked --no-dev --extra cloud
 
-COPY src/__init__.py src/fetch_data.py src/fetch_from_gcs.py src/transform_data.py src/write_to_data_lake.py src/write_to_big_query.py src/
-COPY pipelines/__init__.py pipelines/data_lake_ingestion.py pipelines/data_warehouse_transformation.py pipelines/
+COPY src/ src/
+COPY pipelines/ pipelines/
+COPY .secrets/ .secrets/
