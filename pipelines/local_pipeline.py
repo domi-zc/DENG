@@ -16,8 +16,7 @@ class LocalPipeline:
 
     DATASET_URL = "https://epoch.ai/data/gpu_clusters.zip"
     CSV_FILENAME = "gpu_clusters.csv"
-    TARGET_TABLE = "gpu_clusters_cleaned"
-    REQUIRED_ENV_VARS = ("DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME")
+    REQUIRED_ENV_VARS = ("DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT", "DB_NAME", "LOCAL_DB_TABLE")
 
     logger = logging.getLogger(__name__)
 
@@ -55,11 +54,14 @@ class LocalPipeline:
 
     def run(self) -> None:
         """Execute the local pipeline."""
+        environment = self.get_environment_variables()
+        target_table = environment["LOCAL_DB_TABLE"]
+        
         raw_csv = self.fetcher.fetch_csv_from_url(self.DATASET_URL, self.CSV_FILENAME)
         df = self.fetcher.load_dataframe(raw_csv)
         df = self.transformer.clean(df)
 
-        self.writer.write_dataframe(df, self.TARGET_TABLE)
+        self.writer.write_dataframe(df, target_table)
         self.logger.info("Local pipeline completed successfully")
 
 def main() -> None:
