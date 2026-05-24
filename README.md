@@ -15,7 +15,7 @@ Both tracks are fully containerized using Docker and orchestrated using Kestra. 
 
 ## Prerequisites
 
-To run this pipeline on a fresh machine, you need the following installed:
+Before running either pipeline track, make sure the following tools are installed and that you have access to a Google Cloud account (only required for the Cloud track):
 
 - [Git](https://git-scm.com/downloads)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Running in the background)
