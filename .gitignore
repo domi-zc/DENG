@@ -222,5 +222,6 @@ test_postgres/
 data/
 
 .terraform
-*.tfstate
+*.tfstate*
 *.tfvars
+.terraform.lock.hcl
