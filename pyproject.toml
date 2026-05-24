@@ -19,6 +19,7 @@ local = [
 cloud = [
     "google-cloud-bigquery>=3.25.0",
     "google-cloud-storage>=2.18.0",
+    "pandas-gbq>=0.35.0",
     "pyarrow>=17.0.0",
 ]
 
