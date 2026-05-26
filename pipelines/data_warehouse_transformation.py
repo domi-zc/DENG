@@ -15,7 +15,7 @@ class DataWarehouseTransformation:
     """Read the lake CSV, transform it, and replace the BigQuery analytics table."""
 
     LAKE_OBJECT_PATH = "raw/gpu_clusters/gpu_clusters.csv"
-    CLUSTER_FIELDS = ["country", "owner"]
+    CLUSTER_FIELDS = ["country"]
     REQUIRED_ENV_VARS = ("GCS_BUCKET", "GCP_PROJECT_ID", "BQ_DATASET", "BQ_TABLE")
 
     logger = logging.getLogger(__name__)
@@ -37,13 +37,10 @@ class DataWarehouseTransformation:
         """Execute the warehouse transformation and return the loaded BigQuery table id."""
         self.logger.info("Starting warehouse transformation")
 
-        # Fetch the CSV from the GCS bucket and clean it
         raw_csv = self.fetcher.download_csv(self.bucket_name, self.LAKE_OBJECT_PATH)
         df = self.fetcher.load_dataframe(raw_csv)
         df = self.transformer.clean(df)
 
-
-        # Load into Google BigQuery
         table_id = self.writer.load_dataframe(
             df,
             table=self.table,

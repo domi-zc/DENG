@@ -6,10 +6,37 @@ from google.cloud import bigquery
 
 
 class BigQueryWriter:
-    """Load DataFrames into BigQuery with clustering."""
+    """Load DataFrames into BigQuery with an explicit schema, year partitioning, and clustering."""
 
     DEFAULT_LOCATION = "europe-west6"
     WRITE_DISPOSITION = bigquery.WriteDisposition.WRITE_TRUNCATE
+
+    TABLE_SCHEMA = [
+        bigquery.SchemaField("name", "STRING"),
+        bigquery.SchemaField("owner", "STRING"),
+        bigquery.SchemaField("country", "STRING"),
+        bigquery.SchemaField("power_capacity_mw", "FLOAT"),
+        bigquery.SchemaField("first_operational_date", "DATE"),
+        bigquery.SchemaField("calculated_cost", "FLOAT"),
+        bigquery.SchemaField("reported_cost", "FLOAT"),
+        bigquery.SchemaField("reported_cost_inflation_adjusted", "FLOAT"),
+        bigquery.SchemaField("hardware_cost", "FLOAT"),
+        bigquery.SchemaField("chip_type_primary", "STRING"),
+        bigquery.SchemaField("chip_quantity_primary", "INTEGER"),
+        bigquery.SchemaField("chip_type_secondary", "STRING"),
+        bigquery.SchemaField("chip_quantity_secondary", "INTEGER"),
+        bigquery.SchemaField("total_number_of_ai_chips", "INTEGER"),
+        bigquery.SchemaField("energy_efficiency", "FLOAT"),
+        bigquery.SchemaField("max_ops", "FLOAT"),
+        bigquery.SchemaField("8bit_ops", "FLOAT"),
+        bigquery.SchemaField("16bit_ops", "FLOAT"),
+        bigquery.SchemaField("32bit_ops",  "FLOAT"),
+    ]
+
+    PARTITION_CONFIG = bigquery.TimePartitioning(
+        type_=bigquery.TimePartitioningType.YEAR,
+        field="first_operational_date",
+    )
 
     logger = logging.getLogger(__name__)
 
@@ -34,7 +61,7 @@ class BigQueryWriter:
         table: str,
         cluster_fields: list[str],
     ) -> str:
-        """Replace a BigQuery table with the DataFrame, applying clustering."""
+        """Ensure the table exists then replace its data with the DataFrame."""
         if df is None or df.empty:
             raise ValueError("Input DataFrame must not be empty")
         if not table:
@@ -45,13 +72,18 @@ class BigQueryWriter:
         client = self.get_client()
         table_id = f"{self.project}.{self.dataset}.{table}"
 
+        bq_table = bigquery.Table(table_id, schema=self.TABLE_SCHEMA)
+        bq_table.time_partitioning = self.PARTITION_CONFIG
+        bq_table.clustering_fields = list(cluster_fields)
+        client.create_table(bq_table, exists_ok=True)
 
         job_config = bigquery.LoadJobConfig(
+            schema=self.TABLE_SCHEMA,
+            time_partitioning=self.PARTITION_CONFIG,
             write_disposition=self.WRITE_DISPOSITION,
             clustering_fields=list(cluster_fields),
         )
 
-        # Load to BigQuery table
         self.logger.info(f"Loading {len(df)} rows into BigQuery table {table_id}")
 
         try:
