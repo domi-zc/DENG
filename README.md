@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project features an end-to-end batch data pipeline that ingests, cleans and stores the Epoch AI GPU Clusters dataset. It is designed to support an AI Infrastructure Analyst at an AI factory currently conceptualizing the company's newest AI data center in Switerland. Since the company is not a hyperscaler, and given that capital expenditures (CapEx) for 1 MW of an AI data center capacity amount to approximately 55 million CHF - coupled with the current gobal memory shortage - chip selection and infrastructure design carry significant financial consequences. By benchmarking against comparable facilities in the dataset, this information supports the busines case for the project's high CapEx and aids in the chip selection strategy.
+This project features an end-to-end batch data pipeline that ingests, cleans and stores the Epoch AI GPU Clusters dataset. It is designed to support an AI Infrastructure Analyst at an AI factory currently conceptualizing the company's newest AI data center in Switzerland. Since the company is not a hyperscaler, and given that capital expenditures (CapEx) for 1 MW of an AI data center capacity amount to approximately 55 million CHF - coupled with the current global memory shortage - chip selection and infrastructure design carry significant financial consequences. By benchmarking against comparable facilities in the dataset, this information supports the business case for the project's high CapEx and aids in the chip selection strategy.
 
 The project features two completely independent execution tracks:
 
@@ -20,7 +20,7 @@ Before running either pipeline track, make sure the following tools are installe
 - [Git](https://git-scm.com/downloads)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Running in the background)
 - [Terraform CLI](https://developer.hashicorp.com/terraform/install)
-- [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.13 package manager)
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.13 package manager) - *(Only required for local development and testing)*
 - [Google Cloud Platform](https://console.cloud.google.com/) (GCP) Account
 
 ---
@@ -31,11 +31,18 @@ This pipeline can be executed in two different environments: Cloud or Local. The
 
 ### Clone the Repository
 
-Before either track, clone this repository and install the Python dependencies. The pipeline runs inside Docker, but installing dependencies locally with `uv` enables editor tooling, type checking, and ad-hoc runs of the pipelines outside of containers.
+Before either track, clone this repository:
 
 ```bash
 git clone https://github.com/domi-zc/DENG.git
 cd DENG
+```
+
+### For Development Only (Optional)
+
+If you plan to develop or test inside the repository directly, you can install the Python dependencies locally using `uv`. This enables editor tooling, type checking, and ad-hoc runs of the pipelines outside of containers. If you are only running the project for reproducibility via Docker, you can skip this step.
+
+```bash
 uv sync --all-extras
 ```
 
