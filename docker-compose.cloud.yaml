@@ -2,7 +2,7 @@ services:
   cloud-image-builder:
     build:
       context: .
-      dockerfile: Dockerfile.cloud
+      dockerfile: docker/Dockerfile.cloud
     image: cloud_pipeline_image:latest
     command: ["echo", "Cloud image built successfully!"]
 

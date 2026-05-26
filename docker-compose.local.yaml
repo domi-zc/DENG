@@ -30,7 +30,7 @@ services:
   local-image-builder:
     build:
       context: .
-      dockerfile: Dockerfile.local
+      dockerfile: docker/Dockerfile.local
     image: gpu_pipeline:latest
     command: ["echo", "Local image built successfully!"]
 
