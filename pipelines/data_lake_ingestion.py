@@ -1,10 +1,7 @@
 import logging
-import os
-import sys
-
-from dotenv import load_dotenv
 
 from src.fetch_data import DataFetcher
+from src.pipeline_utils import PipelineUtils
 from src.write_to_data_lake import DataLakeWriter
 
 
@@ -20,27 +17,11 @@ class DataLakeIngestion:
 
     def __init__(self) -> None:
         """Configure logging, load the environment, and construct collaborators."""
-        self.configure_logging()
-        environment = self.get_environment_variables()
+        self.utils = PipelineUtils()
+        self.utils.configure_logging()
+        environment = self.utils.get_environment_variables(self.REQUIRED_ENV_VARS)
         self.fetcher = DataFetcher()
         self.writer = DataLakeWriter(environment["GCS_BUCKET"])
-
-    def configure_logging(self) -> None:
-        """Force INFO logging to stdout for Kestra."""
-        load_dotenv()
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(asctime)s %(levelname)s %(name)s %(message)s",
-            stream=sys.stdout,
-        )
-
-    def get_environment_variables(self) -> dict[str, str]:
-        """Validate and return all required environment variables as a dictionary."""
-        environment = {name: os.environ.get(name, "") for name in self.REQUIRED_ENV_VARS}
-        missing = [name for name, value in environment.items() if not value]
-        if missing:
-            raise EnvironmentError(f"Missing required environment variables: {missing}")
-        return environment
 
     def run(self) -> str:
         """Execute the ingestion pipeline and return the resulting gs:// URI."""
