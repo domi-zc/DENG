@@ -1,5 +1,3 @@
-"""Warehouse transformation: read the lake CSV, clean it, and load it into BigQuery."""
-
 import logging
 import os
 import sys
@@ -9,7 +7,6 @@ from dotenv import load_dotenv
 from src.fetch_from_gcs import GCSFetcher
 from src.transform_data import Transformer
 from src.write_to_big_query import BigQueryWriter
-
 
 class DataWarehouseTransformation:
     """Read the lake CSV, transform it, and replace the BigQuery analytics table."""
@@ -33,23 +30,6 @@ class DataWarehouseTransformation:
             dataset=environment["BQ_DATASET"],
         )
 
-    def run(self) -> str:
-        """Execute the warehouse transformation and return the loaded BigQuery table id."""
-        self.logger.info("Starting warehouse transformation")
-
-        raw_csv = self.fetcher.download_csv(self.bucket_name, self.LAKE_OBJECT_PATH)
-        df = self.fetcher.load_dataframe(raw_csv)
-        df = self.transformer.clean(df)
-
-        table_id = self.writer.load_dataframe(
-            df,
-            table=self.table,
-            cluster_fields=self.CLUSTER_FIELDS,
-        )
-
-        self.logger.info(f"Warehouse transformation completed: {table_id}")
-        return table_id
-
     def configure_logging(self) -> None:
         """Force INFO logging to stdout for Kestra."""
         load_dotenv()
@@ -67,10 +47,25 @@ class DataWarehouseTransformation:
             raise EnvironmentError(f"Missing required environment variables: {missing}")
         return environment
 
+    def run(self) -> str:
+        """Execute the warehouse transformation and return the loaded BigQuery table id."""
+        self.logger.info("Starting warehouse transformation")
+
+        raw_csv = self.fetcher.download_csv(self.bucket_name, self.LAKE_OBJECT_PATH)
+        df = self.fetcher.load_dataframe(raw_csv)
+        df = self.transformer.clean(df)
+
+        table_id = self.writer.load_dataframe(
+            df,
+            table=self.table,
+            cluster_fields=self.CLUSTER_FIELDS,
+        )
+
+        self.logger.info(f"Warehouse transformation completed: {table_id}")
+        return table_id
 
 def main() -> None:
     DataWarehouseTransformation().run()
-
 
 if __name__ == "__main__":
     main()

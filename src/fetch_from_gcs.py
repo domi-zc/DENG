@@ -1,11 +1,8 @@
-"""Fetch data from Google Cloud Storage and load it into memory."""
-
 import io
 import logging
 
 import pandas as pd
 from google.cloud import storage
-
 
 class GCSFetcher:
     """Download objects from GCS and parse CSV content into DataFrames."""
@@ -15,6 +12,12 @@ class GCSFetcher:
     def __init__(self) -> None:
         """Prepare a lazy GCS client."""
         self.client: storage.Client | None = None
+
+    def get_client(self) -> storage.Client:
+        """Return a cached GCS client, creating it on first use."""
+        if self.client is None:
+            self.client = storage.Client()
+        return self.client
 
     def download_csv(self, bucket_name: str, object_path: str) -> bytes:
         """Download an object from GCS and return its bytes."""
@@ -45,9 +48,3 @@ class GCSFetcher:
 
         self.logger.info(f"Loaded DataFrame with {len(df)} rows and {len(df.columns)} columns")
         return df
-
-    def get_client(self) -> storage.Client:
-        """Return a cached GCS client, creating it on first use."""
-        if self.client is None:
-            self.client = storage.Client()
-        return self.client

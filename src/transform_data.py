@@ -124,7 +124,6 @@ class Transformer:
 
     ANONYMIZED_NAME = "Anonymized Chinese System"
     PRIMARY_CHIP_REQUIRED_COLUMNS = ("chip_type_primary", "chip_quantity_primary")
-    # Cast to float because values can exceed PostgreSQL bigint range (~9.2 × 10¹⁸)
     OPS_COLUMNS = ("max_ops", "8bit_ops", "16bit_ops", "32bit_ops")
 
     logger = logging.getLogger(__name__)

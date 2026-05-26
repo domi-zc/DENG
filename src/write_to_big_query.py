@@ -54,6 +54,12 @@ class BigQueryWriter:
         self.location = location
         self.client: bigquery.Client | None = None
 
+    def get_client(self) -> bigquery.Client:
+        """Return a cached BigQuery client, creating it on first use."""
+        if self.client is None:
+            self.client = bigquery.Client(project=self.project, location=self.location)
+        return self.client
+
     def load_dataframe(
         self,
         df: pd.DataFrame,
@@ -99,9 +105,3 @@ class BigQueryWriter:
 
         self.logger.info(f"Loaded {load_job.output_rows} rows into {table_id}")
         return table_id
-
-    def get_client(self) -> bigquery.Client:
-        """Return a cached BigQuery client, creating it on first use."""
-        if self.client is None:
-            self.client = bigquery.Client(project=self.project, location=self.location)
-        return self.client

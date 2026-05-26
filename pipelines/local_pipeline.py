@@ -1,5 +1,3 @@
-"""Local pipeline: download source data, clean it, and load it into the local PostgreSQL database."""
-
 import logging
 import os
 import sys
@@ -56,7 +54,7 @@ class LocalPipeline:
         """Execute the local pipeline."""
         environment = self.get_environment_variables()
         target_table = environment["LOCAL_DB_TABLE"]
-        
+
         raw_csv = self.fetcher.fetch_csv_from_url(self.DATASET_URL, self.CSV_FILENAME)
         df = self.fetcher.load_dataframe(raw_csv)
         df = self.transformer.clean(df)

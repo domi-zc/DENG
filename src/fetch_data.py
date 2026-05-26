@@ -1,12 +1,9 @@
-"""Fetch data over HTTP and load it into memory."""
-
 import io
 import logging
 import zipfile
 
 import pandas as pd
 import requests
-
 
 class DataFetcher:
     """Download a ZIP from a URL and parse the contained CSV into a DataFrame."""

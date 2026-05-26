@@ -16,6 +16,12 @@ class DataLakeWriter:
         self.bucket_name = bucket_name
         self.client: storage.Client | None = None
 
+    def get_client(self) -> storage.Client:
+        """Return a cached GCS client, creating it on first use."""
+        if self.client is None:
+            self.client = storage.Client()
+        return self.client
+
     def upload_bytes(self, object_path: str, content: bytes) -> str:
         """Upload bytes to the configured bucket and return the resulting gs:// URI."""
         if not object_path:
@@ -43,9 +49,3 @@ class DataLakeWriter:
         uri = f"gs://{self.bucket_name}/{object_path}"
         self.logger.info(f"Uploaded {len(content)} bytes to {uri}")
         return uri
-
-    def get_client(self) -> storage.Client:
-        """Return a cached GCS client, creating it on first use."""
-        if self.client is None:
-            self.client = storage.Client()
-        return self.client

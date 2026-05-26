@@ -1,5 +1,3 @@
-"""Data lake ingestion: download source data and write the raw CSV to Google Cloud Storage."""
-
 import logging
 import os
 import sys
@@ -27,16 +25,6 @@ class DataLakeIngestion:
         self.fetcher = DataFetcher()
         self.writer = DataLakeWriter(environment["GCS_BUCKET"])
 
-    def run(self) -> str:
-        """Execute the ingestion pipeline and return the resulting gs:// URI."""
-        self.logger.info("Starting data lake ingestion")
-
-        raw_csv = self.fetcher.fetch_csv_from_url(self.DATASET_URL, self.CSV_FILENAME)
-        uri = self.writer.upload_bytes(self.LAKE_OBJECT_PATH, raw_csv)
-
-        self.logger.info(f"Data lake ingestion completed: {uri}")
-        return uri
-
     def configure_logging(self) -> None:
         """Force INFO logging to stdout for Kestra."""
         load_dotenv()
@@ -54,10 +42,18 @@ class DataLakeIngestion:
             raise EnvironmentError(f"Missing required environment variables: {missing}")
         return environment
 
+    def run(self) -> str:
+        """Execute the ingestion pipeline and return the resulting gs:// URI."""
+        self.logger.info("Starting data lake ingestion")
+
+        raw_csv = self.fetcher.fetch_csv_from_url(self.DATASET_URL, self.CSV_FILENAME)
+        uri = self.writer.upload_bytes(self.LAKE_OBJECT_PATH, raw_csv)
+
+        self.logger.info(f"Data lake ingestion completed: {uri}")
+        return uri
 
 def main() -> None:
     DataLakeIngestion().run()
-
 
 if __name__ == "__main__":
     main()
